@@ -29,9 +29,10 @@ export class LoginComponent implements OnInit {
   }
 
   // convenience getter for easy access to form fields
+  // tslint:disable-next-line: typedef
   get f() { return this.form.controls; }
 
-  onSubmit() {
+  onSubmit(): void {
     this.submitted = true;
 
     // reset alerts on submit
@@ -48,7 +49,7 @@ export class LoginComponent implements OnInit {
         .subscribe({
             next: () => {
                 // get return url from query parameters or default to home page
-                const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+                const returnUrl = this.route.snapshot.queryParams.returnUrl || '/';
                 this.router.navigateByUrl(returnUrl);
             },
             error: error => {
