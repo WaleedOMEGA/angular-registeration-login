@@ -10,7 +10,7 @@ export class AlertComponent{
   alerts: Alert[] = [];
   @Input() fade = true;
   cssClass(alert: Alert): string |undefined{
-    if (!alert) { return; }
+    if (!alert) { return ''; }
 
     const classes = ['alert', 'alert-dismissable', 'mt-4', 'container'];
 
