@@ -1,14 +1,62 @@
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { NavigationStart, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Alert, AlertType } from '../models/alert';
+import { AlertService } from '../services/alert.service';
 @Component({
   // tslint:disable-next-line: component-selector
   selector: 'alert',
   templateUrl: 'alert.component.html'
 })
-export class AlertComponent{
-  alerts: Alert[] = [];
+export class AlertComponent implements OnInit, OnDestroy{
+  @Input() id = 'default-alert';
   @Input() fade = true;
+  alerts: Alert[] = [];
+  alertSubscription: Subscription;
+  routeSubscription: Subscription;
+
+  constructor(private router: Router, private alertService: AlertService) {
+    this.alertSubscription = new Subscription();
+    this.routeSubscription = new Subscription();
+  }
+
+  ngOnInit(): void {
+    // subscribe to new alert notifications
+    this.alertSubscription = this.alertService.onAlert(this.id)
+        .subscribe(alert => {
+        // clear alerts when an empty alert is received
+        if (alert.message) {
+            // add alert to array
+            this.alerts.push(alert);
+
+            // auto close alert if required
+            if (alert.autoClose) {
+                setTimeout(() => this.removeAlert(alert), 3000);
+            }
+        } else {
+            // filter out alerts without 'keepAfterRouteChange' flag
+            this.alerts = this.alerts.filter(x => x.keepAfterRouteChange);
+
+            // remove 'keepAfterRouteChange' flag on the rest
+            this.alerts.forEach(x => delete x.keepAfterRouteChange);
+        }
+    });
+
+    // clear alerts on location change
+    this.routeSubscription = this.router.events.subscribe(event => {
+        if (event instanceof NavigationStart) {
+            this.alertService.clear(this.id);
+        }
+    });
+}
+
+
+ngOnDestroy(): void {
+  // unsubscribe to avoid memory leaks
+  this.alertSubscription.unsubscribe();
+  this.routeSubscription.unsubscribe();
+}
   cssClass(alert: Alert): string |undefined{
     if (!alert) { return ''; }
 

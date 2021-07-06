@@ -8,10 +8,11 @@ import { AccountService } from './services/account.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  user: User;
+  user: User|null;
 
   constructor(private accountService: AccountService){
     this.user = new User();
+    this.accountService.user.subscribe(x => this.user = x);
   }
 
   logout(): void {
